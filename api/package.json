@@ -11,6 +11,9 @@
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.0.0",
+    "@faker-js/faker": "^8.4.1",
+    "@japa/preset-adonis": "^1.2.0",
+    "@japa/runner": "2.5.1",
     "adonis-preset-ts": "^2.1.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
@@ -23,6 +26,7 @@
     "youch-terminal": "^1.1.1"
   },
   "dependencies": {
+    "@adonisjs/attachment-lite": "^1.0.8",
     "@adonisjs/auth": "8.0.0",
     "@adonisjs/core": "^5.3.0",
     "@adonisjs/lucid": "18.0.0",
