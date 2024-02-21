@@ -82,12 +82,11 @@ test.group('Contacts index', (group) => {
     })
   })
 
-  test('paginated response body includes data similar to existing data within the database', async ({
+  test('paginated response body includes contact data whose ids are the same within the database', async ({
     assert,
     client,
   }) => {
     await Contact.query().delete()
-
     await ContactFactory.query().createMany(35)
 
     const response = await client.get('/contacts').qs({
@@ -95,32 +94,42 @@ test.group('Contacts index', (group) => {
       page: 3,
     })
 
-    const responseBody = JSON.parse(response.text())
-    const responseData = responseBody.data
-    const responseDataArray = responseData.data
+    const responseBody = response.body()
+    const responseArrayData = responseBody.data.data
 
     response.dumpBody()
 
     const contacts = await Contact.query().limit(5).offset(10).orderBy('first_name', 'asc')
-    contacts.forEach((contact) => {
-      const contactData = contact.toJSON() // convert model object to JSON
 
-      // assert.include(contactData, responseDataArray)
-      const foundContact: typeof contactData = responseDataArray.find(
-        (responseDataArrayElement) => {
-          return responseDataArrayElement.id === contactData.id
-        }
+    // get the contact ids from the client response and cantact query
+    const contactsElementIds: string[] = contacts.map((contact) => contact.$attributes.id)
+    const responseArrayDataElementIds: string[] = responseArrayData.map((contact) => contact.id)
+
+    contacts.map((contact) => {
+      const contactsData = contact.$attributes
+      const foundContact = responseArrayData.find(
+        (responseArrayDataObject) => contactsData.id === responseArrayDataObject.id
       )
 
-      assert.isDefined(
-        foundContact,
-        `Contact with id ${contactData.id} not found in responseDataArray`
-      )
-      assert.include(
-        contactData,
-        foundContact,
-        `Contact data ID does not match any response data array element for the id ${contactData.id}`
-      )
+      assert.isDefined(foundContact, 'contact not found!')
+    })
+
+    assert.deepEqual(contactsElementIds, responseArrayDataElementIds, 'Response unmatched')
+    response.assertBodyContains({
+      data: {
+        meta: {
+          total: 35,
+          per_page: 5,
+          current_page: 3,
+          last_page: 7,
+          first_page: 1,
+          first_page_url: '/?page=1',
+          last_page_url: '/?page=7',
+          next_page_url: '/?page=4',
+          previous_page_url: '/?page=2',
+        },
+        data: [],
+      },
     })
   })
 })

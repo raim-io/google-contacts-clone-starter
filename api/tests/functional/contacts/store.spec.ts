@@ -63,13 +63,11 @@ test.group('Contacts store', (group) => {
     assert.isTrue(await fakeDrive.exists(name))
   })
 
-  test('return 422 if the contact`s profile picture properties are invalid before creating a new contact', async ({
+  test('return 422 if uploaded profile picture is wrong/invalid', async ({
     client,
     route,
     assert,
   }) => {
-    // const response = await client.post('/contacts')
-
     const fakeDrive = Drive.fake()
 
     const { contents, name } = await file.generatePdf('2mb')
