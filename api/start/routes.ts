@@ -20,7 +20,6 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 import HealthCheck from '@ioc:Adonis/Core/HealthCheck'
-import './routes/contacts'
 
 Route.get('/', async () => {
   return { hello: 'world' }
@@ -34,3 +33,11 @@ Route.get('health', async ({ response }) => {
 
   return report.healthy ? response.ok(report) : response.badRequest(report)
 })
+
+Route.resource('contacts', 'ContactsController')
+  .apiOnly()
+  .middleware({
+    update: ['findContact'],
+    show: ['findContact'],
+    destroy: ['findContact'],
+  })
