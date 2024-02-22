@@ -14,11 +14,9 @@ test.group('Contacts update', (group) => {
 
   // Write your test here
 
-  test('Edit an existing contact via the contact`s ID', async ({ client, route }) => {
-    await Contact.query().delete()
-
+  test('Edit an existing contact via the contact`s ID', async ({ client, route, assert }) => {
     const contact = await ContactFactory.query().create()
-    const updatedContact = {
+    const updateData = {
       firstName: 'Test',
       surname: 'Contact',
       email1: 'example@contact.com',
@@ -26,14 +24,23 @@ test.group('Contacts update', (group) => {
     }
     const response = await client
       .put(route('ContactsController.update', { id: contact.id }))
-      .form(updatedContact)
+      .form(updateData)
+
+    const responseBody = response.body()
+
+    const persistedContact = await Contact.findOrFail(contact.id)
 
     response.dumpBody()
     response.assertStatus(201)
     response.assertBodyContains({
       message: 'Contact was edited',
-      data: contact.id,
+      data: updateData,
     })
+
+    assert.equal(persistedContact.$attributes.firstName, responseBody.data.firstName)
+    assert.equal(persistedContact.$attributes.surname, responseBody.data.surname)
+    assert.equal(persistedContact.$attributes.email1, responseBody.data.email1)
+    assert.equal(persistedContact.$attributes.phoneNumber1, responseBody.data.phoneNumber1)
   })
 
   test('return 404 if the requested ID to be deleted does not exist on the database', async ({
@@ -70,17 +77,18 @@ test.group('Contacts update', (group) => {
         phoneNumber1: '+22 564 6454 454',
       })
       .file('profilePicture', contents, { filename: name })
+    const responseBody = response.body()
 
-    console.log(`response text: ${response.text}`)
-    console.log(`response body: ${response.body.toString}`)
+    const persistedContact = await Contact.findOrFail(contact.id)
 
     response.dumpBody()
     response.assertStatus(201)
     response.assertBodyContains({
       message: 'Contact was edited',
-      data: contact.id,
+      data: { profilePicture: { name: persistedContact.$attributes.profilePicture.name } },
     })
 
     assert.isTrue(await fakeDrive.exists(name))
+    assert.equal(responseBody.data.profilePicture.name, name)
   })
 })

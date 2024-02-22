@@ -48,82 +48,40 @@ export default class ContactsController {
     // const payload = request.body();
 
     try {
-      const payload = await request.validate(ContactValidator)
-
       /**
-       * It is important to destructure and obtain the
-       * individual properties which we want to insert
-       * into our the table.
+       * It is important to destructure and obtain the individual properties which
+       * we want to insert into our the table.
        *
-       * You do not want malicious actors to try to
-       * overwrite the `id` or `created_at` or
-       * `updated_at` by including those in the payload
+       * You do not want malicious actors to try to overwrite the `id` or
+       * `created_at` or `updated_at` by including those in the payload
        *
-       * So, the statement below is discouraged as it is
-       * dangerous
+       * So, the statement below is discouraged as it is dangerous
        *
        * `await Contact.create(payload)`
        *
-       * Again, destructure the `payload` as done
-       * below, no matter how many properties are there
-       * in the payload
+       * Again, destructure the `payload` as done below, no matter how many
+       * properties are there in the payload
        */
-      const {
-        firstName,
-        surname,
-        company,
-        jobTitle,
-        email1,
-        email2,
-        phoneNumber1,
-        phoneNumber2,
-        country,
-        streetAddressLine1,
-        streetAddressLine2,
-        city,
-        postCode,
-        state,
-        birthday,
-        website,
-        notes,
-        profilePicture,
-      } = payload
+      const payload = await request.validate(ContactValidator)
 
       /**
        * create a new contact
        */
       const contact = await Contact.create({
-        firstName,
-        surname,
-        company,
-        jobTitle,
-        email1,
-        email2,
-        phoneNumber1,
-        phoneNumber2,
-        country,
-        streetAddressLine1,
-        streetAddressLine2,
-        city,
-        postCode,
-        state,
-        birthday,
-        website,
-        notes,
-        profilePicture: profilePicture ? Attachment.fromFile(profilePicture) : null,
+        ...payload,
+        profilePicture: payload.profilePicture ? Attachment.fromFile(payload.profilePicture) : null,
       })
 
       /**
-       * Refreshing the `contact moedl before returning
-       * it as the payload of the response is important
+       * Refreshing the `contact moedl before returning it as the payload of the
+       * response is important
        *
-       * If not refreshed, only the actual/few properties
-       * which were inserted will be returned
+       * If not refreshed, only the actual/few properties which were inserted will
+       * be returned
        */
+      // await contact.refresh() // not necessary
 
-      await contact.refresh()
-
-      return response.created({ message: 'Contact was created.', data: contact.id })
+      return response.created({ message: 'Contact was created.', data: contact })
     } catch (error) {
       Logger.error('Error at ContactsController.store:\n%o', error)
 
@@ -161,52 +119,15 @@ export default class ContactsController {
     try {
       const payload = await request.validate(ContactValidator)
 
-      const {
-        firstName,
-        surname,
-        company,
-        jobTitle,
-        email1,
-        email2,
-        phoneNumber1,
-        phoneNumber2,
-        country,
-        streetAddressLine1,
-        streetAddressLine2,
-        city,
-        postCode,
-        state,
-        birthday,
-        website,
-        notes,
-        profilePicture,
-      } = payload!
-
       requestedContact?.merge({
-        firstName,
-        surname,
-        company,
-        jobTitle,
-        email1,
-        email2,
-        phoneNumber1,
-        phoneNumber2,
-        country,
-        streetAddressLine1,
-        streetAddressLine2,
-        city,
-        postCode,
-        state,
-        birthday,
-        website,
-        notes,
-        profilePicture: profilePicture ? Attachment.fromFile(profilePicture) : null,
+        ...payload,
+        profilePicture: payload.profilePicture ? Attachment.fromFile(payload.profilePicture) : null,
       })
 
       await requestedContact?.save()
-      await requestedContact?.refresh()
+      // await requestedContact?.refresh()
 
-      return response.created({ message: 'Contact was edited', data: requestedContact?.id })
+      return response.created({ message: 'Contact was edited', data: requestedContact })
     } catch (error) {
       Logger.error('Error at ContactsController.update:\n%o', error)
 
