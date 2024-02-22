@@ -28,11 +28,12 @@ export default class ContactValidator {
    *    ```
    */
   public schema = schema.create({
-    firstName: schema.string({ escape: true, trim: true }, [rules.maxLength(30)]),
-    surname: schema.string({ escape: true, trim: true }, [rules.maxLength(30)]),
-    company: schema.string.optional({ escape: true, trim: true }),
-    jobTitle: schema.string.optional({ escape: true, trim: true }),
-    email1: schema.string({ trim: true }, [
+    firstName: schema.string([rules.escape(), rules.trim(), rules.maxLength(30)]),
+    surname: schema.string([rules.escape(), rules.trim(), rules.maxLength(30)]),
+    company: schema.string.optional([rules.escape(), rules.trim()]),
+    jobTitle: schema.string.optional([rules.escape(), rules.trim()]),
+    email1: schema.string([
+      rules.trim(),
       rules.email(),
       rules.unique({
         table: 'contacts',
@@ -41,15 +42,15 @@ export default class ContactValidator {
         whereNot: this.refs?.id ? { id: this.refs.id } : {},
       }),
     ]),
-    email2: schema.string.optional({ trim: true }, [rules.email()]),
-    phoneNumber1: schema.string({ escape: true, trim: true }, [rules.maxLength(20)]),
-    phoneNumber2: schema.string.optional({ escape: true, trim: true }, [rules.maxLength(20)]),
-    country: schema.string.optional({ escape: true, trim: true }, [rules.maxLength(25)]),
-    streetAddressLine1: schema.string.optional({ escape: true, trim: true }),
-    streetAddressLine2: schema.string.optional({ escape: true, trim: true }),
-    city: schema.string.optional({ escape: true, trim: true }),
-    postCode: schema.string.optional({ escape: true, trim: true }),
-    state: schema.string.optional({ escape: true, trim: true }),
+    email2: schema.string.optional([rules.trim(), rules.email()]),
+    phoneNumber1: schema.string([rules.escape(), rules.trim(), rules.maxLength(20)]),
+    phoneNumber2: schema.string.optional([rules.escape(), rules.trim(), rules.maxLength(20)]),
+    country: schema.string.optional([rules.escape(), rules.trim(), rules.maxLength(25)]),
+    streetAddressLine1: schema.string.optional([rules.escape(), rules.trim()]),
+    streetAddressLine2: schema.string.optional([rules.escape(), rules.trim()]),
+    city: schema.string.optional([rules.escape(), rules.trim()]),
+    postCode: schema.string.optional([rules.escape(), rules.trim()]),
+    state: schema.string.optional([rules.escape(), rules.trim()]),
     /**
      * This receives the birthday as a string and parses it inyo a Luxon `DateTime`
      * object.
@@ -59,13 +60,14 @@ export default class ContactValidator {
      * `Date` object from the Luxon `DateTime` object before saving.
      */
     birthday: schema.date.optional({ format: 'yyyy-MM-dd' }, [rules.before('today')]),
-    website: schema.string.optional({ trim: true }, [
+    website: schema.string.optional([
+      rules.trim(),
       rules.url({
         protocols: ['http', 'https'],
         requireHost: true,
       }),
     ]),
-    notes: schema.string.optional({ escape: true, trim: true }),
+    notes: schema.string.optional([rules.escape(), rules.trim()]),
     profilePicture: schema.file.optional({
       size: '500kb',
       extnames: ['jpg', 'png', 'webp', 'gif'],
